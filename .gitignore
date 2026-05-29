@@ -1,0 +1,5 @@
+bin/
+build/
+log/*
+!log/.gitkeep
+conf/server.conf
