@@ -99,15 +99,49 @@ make
 
 ```text
 .
-├── base/           # 基础设施层 (Config 配置解析中心, Log 异步日志系统)
-├── http/           # HTTP 协议层 (HttpRequest 解析机, HttpResponse 响应组装)
-├── net/            # 网络引擎层 (EpollPoller 多路复用器, WebServer 反应堆调度)
-├── pool/           # 资源池化层 (ThreadPool 线程池, SqlConnPool 数据库连接池)
-├── timer/          # 调度模块 (HeapTimer 小顶堆定时器)
-├── resources/      # 静态资源服务区 (HTML/CSS/JS/图片等)
-├── conf/           # 配置文件目录
-├── main.cpp        # 程序引导与启动入口
-└── Makefile        # 自动化构建脚本
+WebServer/
+├── bin/                    # 编译生成的可执行文件存放地
+├── build/                  # CMake 构建时的临时目录 (不提交到 Git)
+├── conf/                   # 配置文件目录
+│   └── server.conf         # 服务器核心运行参数配置
+├── log/                    # 运行时自动生成的日志存放地
+├── resources/              # 静态资源区 (网页、图片、视频等)
+│   ├── index.html
+│   ├── 404.html
+│   └── favicon.ico
+├── CMakeLists.txt          # 现代 C++ 工业标准构建脚本
+├── README.md               # 项目门面文档与快速启动指南
+├── include/                # 头文件区 (.h)
+│   ├── base/               # 【基础组件模块】(提供底层支撑)
+│   │   ├── block_queue.h
+│   │   ├── buffer.h
+│   │   ├── config.h        # <--- 新增：配置解析器
+│   │   ├── log.h
+│   │   ├── sql_conn_pool.h
+│   │   └── thread_pool.h
+│   ├── http/               # 【HTTP 业务模块】(处理应用层协议)
+│   │   ├── http_conn.h
+│   │   ├── http_request.h
+│   │   └── http_response.h
+│   ├── net/                # 【网络核心模块】(处理传输层与高并发引擎)
+│   │   ├── epoll_poller.h
+│   │   ├── timer_manager.h 
+│   │   └── web_server.h
+└── src/                    # 源文件区 (.cpp)
+    ├── base/
+    │   ├── buffer.cpp
+    │   ├── config.cpp      # <--- 新增：配置解析器实现
+    │   ├── log.cpp
+    │   └── sql_conn_pool.cpp
+    ├── http/
+    │   ├── http_conn.cpp
+    │   ├── http_request.cpp
+    │   └── http_response.cpp
+    ├── net/
+    │   ├── epoll_poller.cpp
+    │   ├── timer_manager.cpp
+    │   └── web_server.cpp
+    └── main.cpp            # 唯一的程序入口
 
 ```
 
@@ -138,11 +172,3 @@ make
 * [ ] **轻量级 API 网关**：封装 HTTP Client 组件，使其具备向外请求调度大模型 API 或向量数据库的能力，赋能 C++ RAG 应用落地。
 
 ---
-
-## 📝 许可证 (License)
-
-本项目采用 [MIT License](https://opensource.org/licenses/MIT) 开源许可证。欢迎自由修改、派生以及提交 PR 进行学术和工程探讨！
-
-```
-
-```
