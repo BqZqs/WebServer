@@ -15,16 +15,16 @@
 
 ## 📖 项目简介
 
-本项目是一个基于 Linux 环境下 C++11 编写的工业级轻量 Web 服务器。采用 **主从 Reactor 模式** 与 **半同步/半异步** 的并发架构，底层基于 `Epoll` 多路复用与自建线程池。项目实现了严谨的 HTTP 协议状态机解析、小顶堆定时器连接管理、单例 MySQL 连接池以及支持自动滚动的异步日志引擎。不仅能够轻松应对万级并发，同时也具备极高的扩展性，可作为底层网络组件无缝接入 AI Agent 或 RAG 等应用场景后端。
+本项目是一个基于 Linux 环境下 C++11 编写的工业级轻量 Web 服务器。采用 **单 Reactor 模式** 与 **半同步/半异步** 的并发架构，底层基于 `Epoll` 多路复用与自建线程池。项目实现了严谨的 HTTP 协议状态机解析、小顶堆定时器连接管理、单例 MySQL 连接池以及支持自动滚动的异步日志引擎。不仅能够轻松应对万级并发，同时也具备极高的扩展性。
 
 ## ✨ 核心技术栈与架构亮点
 
-* ⚡ **高并发网络引擎**：基于 `Epoll` 的 **ET（边缘触发）+ EPOLLONESHOT** 模式，配合非阻塞 Socket 与自建 **ThreadPool**，实现零阻塞的事件驱动分发。
-* 🌐 **精细化 HTTP 解析**：基于 **有限状态机 (FSM)** 严谨解析 HTTP 请求，支持 HTTP/1.1 长连接 (Keep-Alive) 以及优雅关闭 (`SO_LINGER`)。
-* 💾 **极致的 I/O 优化**：使用 `mmap` 内存映射技术与 `writev` (Scatter/Gather I/O) 进行零拷贝传输，配合底层自适应动态扩容 `Buffer`，行云流水处理大文件分块下发。
-* ⏱️ **弹性连接管理**：底层基于 **小顶堆 (Min-Heap)** 数据结构设计的时间轮定时器 (`HeapTimer`)，以 O(logN) 复杂度精准剔除超时非活跃连接，死守服务器资源红线。
-* 🐬 **数据库高可用**：采用单例模式与 RAII 手法封装 **MySQL 连接池**，彻底消除高并发下频繁建立 TCP 握手的开销，保障 SQL 交互安全稳定。
-* 📝 **异步日志系统**：基于生产者-消费者模型构建异步日志引擎。前端业务线程极速投递，后端专属线程按天/按行自动滚动落盘，完美解决高并发下的磁盘 I/O 阻塞痛点。
+* ⚡ **高并发网络引擎**：基于 `Epoll` 的 **ET + EPOLLONESHOT** 模式，配合非阻塞 Socket 与自建 **ThreadPool**，实现零阻塞的事件驱动分发。
+* 🌐 **HTTP 解析**：基于 **FSM** 解析 HTTP 请求，支持 HTTP/1.1 Keep-Alive 以及`SO_LINGER`。
+* 💾 ** I/O 优化**：使用 `mmap` 内存映射技术与 `writev` 进行零拷贝传输，配合底层自适应动态扩容 `Buffer`，流畅处理大文件分块下发。
+* ⏱️ **连接管理**：底层基于 **小顶堆** 数据结构设计的定时器，以 O(logN) 复杂度清理超时非活跃连接，保护服务器资源。
+* 🐬 **数据库连接池**：采用单例模式与 RAII 封装 **MySQL 连接池**，消除高并发下频繁建立 TCP 握手的开销，保障 SQL 交互安全稳定。
+* 📝 **异步日志系统**：基于生产者-消费者模型构建异步日志引擎。前端业务线程快速产生日志消息，后端刷盘线程按天/按行自动滚动落盘，解决了高并发下的磁盘 I/O 阻塞痛点。
 
 ---
 
@@ -69,12 +69,12 @@ INSERT INTO user(username, password) VALUES('root', '123456');
 
 ```ini
 port = 8080
-trig_mode = 3          # 3: Listen ET + Conn ET (极限压榨性能模式)
+trig_mode = 1          # 1: Listen LT + Conn ET (稳定模式)
 timeout_ms = 60000     # Keep-Alive 连接空闲超时时间 (ms)
 sql_user = root
 sql_pwd = 你的数据库密码
 db_name = webserver
-thread_num = 8         # 线程池 Worker 数量 (建议配置为 CPU 核心数)
+thread_num = 8         # 线程池 Worker 数量
 
 ```
 
@@ -101,36 +101,36 @@ make
 .
 WebServer/
 ├── bin/                    # 编译生成的可执行文件存放地
-├── build/                  # CMake 构建时的临时目录 (不提交到 Git)
+├── build/                  # CMake 构建时的临时目录
 ├── conf/                   # 配置文件目录
 │   └── server.conf         # 服务器核心运行参数配置
 ├── log/                    # 运行时自动生成的日志存放地
-├── resources/              # 静态资源区 (网页、图片、视频等)
+├── resources/              # 静态资源区
 │   ├── index.html
 │   ├── 404.html
 │   └── favicon.ico
-├── CMakeLists.txt          # 现代 C++ 工业标准构建脚本
-├── README.md               # 项目门面文档与快速启动指南
+├── CMakeLists.txt          # 构建脚本
+├── README.md
 ├── include/                # 头文件区 (.h)
-│   ├── base/               # 【基础组件模块】(提供底层支撑)
+│   ├── base/               # 【基础组件模块】
 │   │   ├── block_queue.h
 │   │   ├── buffer.h
-│   │   ├── config.h        # <--- 新增：配置解析器
+│   │   ├── config.h
 │   │   ├── log.h
 │   │   ├── sql_conn_pool.h
 │   │   └── thread_pool.h
-│   ├── http/               # 【HTTP 业务模块】(处理应用层协议)
+│   ├── http/               # 【HTTP 业务模块】
 │   │   ├── http_conn.h
 │   │   ├── http_request.h
 │   │   └── http_response.h
-│   ├── net/                # 【网络核心模块】(处理传输层与高并发引擎)
+│   ├── net/                # 【网络核心模块】
 │   │   ├── epoll_poller.h
 │   │   ├── timer_manager.h 
 │   │   └── web_server.h
 └── src/                    # 源文件区 (.cpp)
     ├── base/
     │   ├── buffer.cpp
-    │   ├── config.cpp      # <--- 新增：配置解析器实现
+    │   ├── config.cpp
     │   ├── log.cpp
     │   └── sql_conn_pool.cpp
     ├── http/
