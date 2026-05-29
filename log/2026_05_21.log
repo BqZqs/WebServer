@@ -1,0 +1,9 @@
+2026-05-21 23:43:02.848069 [INFO] : ========== Server init Success! ==========
+2026-05-21 23:43:02.848085 [INFO] : Port:8080, OpenLinger: false
+2026-05-21 23:43:02.848091 [INFO] : Listen Mode: ET, OpenConn Mode: ET
+2026-05-21 23:43:02.848097 [INFO] : src_dir: /home/ubuntu/project/WebServer/resources/
+2026-05-21 23:43:02.848155 [INFO] : SqlConnPool num: 12, ThreadPool num: 8
+2026-05-21 23:43:02.848164 [INFO] : ========== Server start! ==========
+2026-05-21 23:43:14.345414 [INFO] : Client[18](117.163.178.69:54721) in, user_count:1
+2026-05-21 23:43:14.346336 [INFO] : Client[18](117.163.178.69:54721) quit, user_count:0
+2026-05-21 23:43:14.466967 [INFO] : Client[18](117.163.178.69:54724) in, user_count:1
