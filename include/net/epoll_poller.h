@@ -8,21 +8,21 @@ namespace web_server {
 namespace net {
 
 // Epoll I/O 多路复用分发器
-// 核心职责：封装 Linux 独有的 Epoll 高性能接口
+// 封装 Linux 的 Epoll 高性能接口
 class EpollPoller {
  public:
   // 默认每次 wait 最大返回 1024 个事件
   explicit EpollPoller(int max_event = 1024);
   ~EpollPoller();
 
-  // 禁用拷贝与赋值，因为系统级别的文件描述符 (FD) 不应被隐式复制
+  // 禁用拷贝与赋值，因为系统级别的 FD 不应被隐式复制
   EpollPoller(const EpollPoller&) = delete;
   EpollPoller& operator=(const EpollPoller&) = delete;
 
-  // 将 Socket FD 及其关注的事件 (如 EPOLLIN | EPOLLET) 挂载到红黑树上
+  // 将 Socket FD 及其关注的事件 挂载到 Epoll 监听树上
   bool AddFd(int fd, uint32_t events);
   
-  // 修改已挂载的 FD 的监听事件 (例如：读完数据后改为监听可写事件 EPOLLOUT)
+  // 修改已挂载的 FD 的监听事件 
   bool ModFd(int fd, uint32_t events);
   
   // 将 FD 从 Epoll 的监听树中摘除

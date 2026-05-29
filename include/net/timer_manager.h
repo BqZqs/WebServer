@@ -9,7 +9,7 @@
 namespace web_server {
 namespace net {
 
-// 回调函数类型（通常用于包裹关闭 Socket 的逻辑）
+// 回调函数类型（用于包裹关闭 Socket 的逻辑）
 using TimeoutCallBack = std::function<void()>;
 using Clock = std::chrono::high_resolution_clock;
 using MS = std::chrono::milliseconds;
@@ -33,27 +33,27 @@ class TimerManager {
   TimerManager() { heap_.reserve(64); }
   ~TimerManager() { Clear(); }
 
-  // 新增定时器。如果 id 已存在，则更新其超时时间并重置回调
+  // 新增定时器。如果 id 已存在，则更新其超时时间并重置回调函数
   void Add(int id, int timeout_ms, const TimeoutCallBack& cb);
   
-  // 仅调整已存在的定时器，用于客户端发送新数据时的“心跳续命”
+  // 仅调整已存在的定时器，用于客户端发送新数据更新超时时间
   void Adjust(int id, int timeout_ms);
   
-  // 主循环调用：剔除所有已超时的节点并执行回调
+  // 由主循环调用：剔除所有已超时的节点并执行回调
   void Tick();
   
-  // 手动删除指定定时器并立即执行回调（如客户端主动断开）
+  // 手动删除指定定时器并立即执行回调
   void DoWork(int id);
   
   // 清空所有定时器
   void Clear();
   
-  // 核心！获取距离最近一个定时器超时所需的等待时间（毫秒）
-  // 这个返回值将直接作为 epoll_wait 的 timeout 参数
+  // 获取距离最近一个定时器超时所需的等待时间（毫秒）
+  // 这个返回值将直接作为 epoll_wait 的 timeout 参数以实现精准等待
   int GetNextTick();
 
  private:
-  // 最小堆的核心操作算法
+  // 最小堆的操作实现
   void Del_(size_t index);
   void SiftUp_(size_t i);
   bool SiftDown_(size_t index, size_t n);

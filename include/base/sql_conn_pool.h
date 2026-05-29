@@ -23,7 +23,7 @@ class SqlConnPool {
             const char* user, const char* pwd,
             const char* db_name, int conn_size = 10);
 
-  // 核心操作：获取/释放连接
+  // 获取/释放连接
   MYSQL* GetConn();
   void FreeConn(MYSQL* conn);
   
@@ -45,7 +45,7 @@ class SqlConnPool {
 };
 
 // =========================================================
-// 遵循 C++ RAII (资源获取即初始化) 规范封装的连接借用器
+// 遵循 C++ RAII 规范封装的连接借用器
 // 作用：利用栈对象的生命周期，自动归还 MySQL 连接，避免死锁或忘记释放
 // =========================================================
 class SqlConnRAII {

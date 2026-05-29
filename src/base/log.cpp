@@ -34,7 +34,7 @@ void Log::Init(int level, const char* path, const char* suffix, size_t max_queue
   path_ = path;
   suffix_ = suffix;
 
-  // 1. 如果 capacity > 0，则开启异步模式：创建队列与专属刷盘线程
+  // 1. 如果 max_queue_capacity > 0，则启用异步日志系统
   if (max_queue_capacity > 0) {
     deque_ = std::make_unique<BlockQueue<std::string>>(max_queue_capacity);
     write_thread_ = std::make_unique<std::thread>(FlushLogThread);
@@ -46,7 +46,7 @@ void Log::Init(int level, const char* path, const char* suffix, size_t max_queue
     mkdir(path_, 0777);
   }
 
-  // 3. 构建初始的文件名：日期+后缀 (例如：./log/2026_05_21.log)
+  // 3. 构建初始的文件名：日期+后缀
   time_t timer = time(nullptr);
   struct tm* sys_time = localtime(&timer);
   to_day_ = sys_time->tm_mday;
@@ -57,7 +57,7 @@ void Log::Init(int level, const char* path, const char* suffix, size_t max_queue
 
   {
     std::lock_guard<std::mutex> lock(mtx_);
-    buff_.RetrieveAll(); // 复用之前写的 Buffer 组件做字符串组装
+    buff_.RetrieveAll(); // 使用 Buffer 组件进行字符串拼接
     if (fp_) { 
         fflush(fp_);
         fclose(fp_); 
@@ -84,7 +84,7 @@ void Log::Write(int level, const char* format, ...) {
   time_t t_sec = now.tv_sec;
   struct tm* sys_time = localtime(&t_sec);
 
-  // ====== 核心功能 1：日志自动按天/按行切割 ======
+  // 1：日志自动按天/按行切割
   // 当日期发生变化，或者当前文件行数达到 max_lines_ 的倍数时，新建文件
   if (to_day_ != sys_time->tm_mday || (line_count_ && (line_count_ % kMaxLogLines == 0))) {
     std::unique_lock<std::mutex> lock(mtx_);
@@ -111,7 +111,7 @@ void Log::Write(int level, const char* format, ...) {
     assert(fp_ != nullptr);
   }
 
-  // ====== 核心功能 2：格式化组装日志内容 ======
+  // 2：格式化组装日志内容
   {
     std::lock_guard<std::mutex> lock(mtx_);
     line_count_++;
@@ -135,11 +135,12 @@ void Log::Write(int level, const char* format, ...) {
     buff_.HasWritten(m);
     buff_.Append("\n\0", 2);
 
-    // ====== 核心功能 3：交由前端/后端处理 ======
+    // 3：交由前端/后端处理
     // 将整个 Buffer 提取为 string
     if (deque_ && !deque_->Full()) {
       deque_->Push(buff_.RetrieveAllToStr()); // 异步写入：扔进队列
     } else {
+      // 存在问题，写日志时如果后端刷盘线程阻塞队列满，前端强制写会导致日志乱序，但是强制push会被阻塞
       fputs(buff_.Peek(), fp_);               // 同步写入或队列满：直接写磁盘
       buff_.RetrieveAll();
     }

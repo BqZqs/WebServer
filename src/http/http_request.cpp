@@ -10,7 +10,7 @@ namespace http {
 const std::unordered_set<std::string> HttpRequest::DEFAULT_HTML{
     "/index", "/register", "/login", "/welcome", "/video", "/picture"};
 
-// 静态成员初始化：定义简单的登录注册路由标识 (供后续扩展使用)
+// 静态成员初始化：定义简单的登录注册路由标识
 const std::unordered_map<std::string, int> HttpRequest::DEFAULT_HTML_TAG{
     {"/register.html", 0}, {"/login.html", 1}};
 
@@ -98,7 +98,7 @@ bool HttpRequest::ParseRequestLine_(const std::string& line) {
   path_ = line.substr(pos_method + 1, pos_path - pos_method - 1);
   version_ = line.substr(pos_path + 1);
 
-  state_ = ParseState::HEADERS; // 状态扭转
+  state_ = ParseState::HEADERS; // 状态转换
   return true;
 }
 
@@ -108,7 +108,7 @@ void HttpRequest::ParseHeader_(const std::string& line) {
   if (pos == std::string::npos) {
     // 读到空行，Header 结束
     if (method_ == "POST") {
-      state_ = ParseState::BODY; // 扭转到 Body
+      state_ = ParseState::BODY; // 转换到 Body
     } else {
       state_ = ParseState::FINISH; // GET/HEAD 等没有 Body 的请求，直接结束
     }
@@ -127,7 +127,7 @@ void HttpRequest::ParseBody_(const std::string& line) {
   state_ = ParseState::FINISH; 
 }
 
-// ============== 以下为 POST 表单数据的深入解析 ==============
+// POST 表单数据的深入解析
 
 int HttpRequest::ConverHex_(char ch) {
   if (ch >= 'A' && ch <= 'F') return ch - 'A' + 10;
@@ -169,6 +169,8 @@ void HttpRequest::ParseFromUrlEncoded_() {
         body_[i] = ' ';
         break;
       case '%': // URL 解码 (如 %20 -> 空格)
+        // 此处为无效解码，并没有将%20转化为空格，而是将 2 和 0 分别替换
+        // 这是为了简化处理逻辑，因为%20占3位，空格站1位，需要进行移位操作，影响循环进行
         num = ConverHex_(body_[i + 1]) * 16 + ConverHex_(body_[i + 2]);
         body_[i + 2] = num % 10 + '0';
         body_[i + 1] = num / 10 + '0';

@@ -44,7 +44,7 @@ int main() {
     std::cout << "[Warning] ./conf/server.conf load failed! Using default parameters.\n";
   }
 
-  // 2. 实例化 Reactor 大管家
+  // 2. 实例化 Reactor
   web_server::net::WebServer server(
       port, trig_mode, timeout_ms, opt_linger,
       sql_port, sql_user.c_str(), sql_pwd.c_str(), db_name.c_str(),

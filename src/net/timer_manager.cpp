@@ -17,7 +17,7 @@ namespace web_server {
 		}
 
 		bool TimerManager::SiftDown_(size_t index, size_t n) {
-			assert(index < heap_.size()); // 【修改】
+			assert(index < heap_.size()); 
 			assert(n <= heap_.size());
 			size_t i = index;
 			size_t child = i * 2 + 1; // 左孩子
@@ -42,7 +42,7 @@ namespace web_server {
 			assert(i < heap_.size());
 			assert(j < heap_.size());
 			std::swap(heap_[i], heap_[j]);
-			// 核心：交换数组节点的同时，必须同步更新哈希表中的映射关系
+			// 交换数组节点的同时，必须同步更新哈希表中的映射关系
 			ref_[heap_[i].id] = i;
 			ref_[heap_[j].id] = j;
 		}

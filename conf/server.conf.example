@@ -1,1 +1,22 @@
+# 网络配置与模式
 port = 8080
+trig_mode = 1
+timeout_ms = 60000
+opt_linger = false
+
+# 数据库配置
+sql_port = 3306
+sql_user = root
+sql_pwd = password
+
+# 数据库连接池配置
+db_name = webserver
+conn_pool_num = 12
+
+# 线程池配置
+thread_num = 8
+
+# 日志配置
+open_log = true
+log_level = 1
+log_que_size = 1024

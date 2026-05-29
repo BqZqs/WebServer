@@ -34,11 +34,11 @@ class Buffer {
 
   // 取出指定长度的数据（移动读指针）
   void Retrieve(size_t len);
-  // 取出数据直到某个特定的位置（常用于解析 HTTP 报文按 \r\n 截断）
+  // 取出数据直到某个特定的位置（用于解析 HTTP 报文按 \r\n 截断）
   void RetrieveUntil(const char* end);
-  // 清空缓冲区（复位指针）
+  // 清空缓冲区
   void RetrieveAll();
-  // 取出所有数据并转化为 std::string 方便上层处理
+  // 取出所有数据并转化为 std::string 类型
   std::string RetrieveAllToStr();
 
   // 返回可写区域的起始指针
@@ -52,7 +52,7 @@ class Buffer {
   void Append(const Buffer& buff);
 
   // 与 Socket FD 直接交互的网络 I/O 接口
-  // save_errno 必不可少，用于向上层抛出 EAGAIN 或 EWOULDBLOCK 等非阻塞状态
+  // save_errno 向上层抛出 EAGAIN 或 EWOULDBLOCK 等非阻塞状态
   ssize_t ReadFd(int fd, int* save_errno);
   ssize_t WriteFd(int fd, int* save_errno);
 

@@ -11,7 +11,7 @@ namespace web_server {
 namespace base {
 
 // 线程安全的有界阻塞队列
-// 用于日志前端投递与后端落盘的解耦
+// 用于实现异步日志
 template <typename T>
 class BlockQueue {
  public:
@@ -24,17 +24,19 @@ class BlockQueue {
   void Close();
   size_t Size();
   size_t Capacity();
+  // 用于清空阻塞队列内容
   void Flush();
 
-  // 生产者调用：放入元素
+  // 日志主线程调用，将缓冲内组装好数据压入阻塞队列
   void Push(const T& item);
   
-  // 消费者调用：取出元素
+  // 日志刷盘线程调用，将阻塞队列内日志内容写入文件
   bool Pop(T& item);
+  // 暂未实现
   bool Pop(T& item, int timeout_ms);
 
  private:
-  std::deque<T> deq_;                   // 底层使用 deque 方便内存分配
+  std::deque<T> deq_;
   size_t capacity_;                     // 队列最大容量
   bool is_close_;                       // 队列关闭标志位
 

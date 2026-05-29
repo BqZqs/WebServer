@@ -15,7 +15,7 @@ EpollPoller::EpollPoller(int max_event)
 }
 
 EpollPoller::~EpollPoller() {
-  // 遵循 RAII 原则，离开生命周期时安全关闭内核分配的文件描述符
+  // 离开生命周期时安全关闭内核分配的文件描述符
   close(epoll_fd_);
 }
 

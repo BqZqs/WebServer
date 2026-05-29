@@ -17,11 +17,11 @@ namespace base {
 class Log {
  public:
   // 初始化系统：参数包含级别、路径、文件后缀、阻塞队列最大容量
-  // 若 max_queue_capacity = 0，则退化为同步日志（直接在调用线程写磁盘）
+  // 若 max_queue_capacity = 0，则退化为同步日志
   void Init(int level, const char* path = "./log", 
             const char* suffix = ".log", size_t max_queue_capacity = 1024);
 
-  // Meyers' Singleton：线程安全且懒加载的单例获取方式
+  // 单例获取方式
   static Log& Instance() {
     static Log instance;
     return instance;
@@ -32,10 +32,14 @@ class Log {
     Log::Instance().AsyncWrite_();
   }
 
+  // 前端线程写日志函数
   void Write(int level, const char* format, ...);
+  // 前端写完日志内容后调用，保证内容存入文件
   void Flush();
 
+  // 获取日志级别
   int GetLevel() const { return level_; }
+  // 设置日志级别
   void SetLevel(int level) { level_ = level; }
   bool IsOpen() const { return is_open_; }
 

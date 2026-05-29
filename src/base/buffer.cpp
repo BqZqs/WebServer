@@ -133,7 +133,7 @@ void Buffer::MakeSpace_(size_t len) {
   if (WritableBytes() + PrependableBytes() < len) {
     buffer_.resize(write_pos_ + len + 1);
   } else {
-    // 空间足够，只是因为之前数据的写入/读出导致碎片化，将现存数据往前搬运（数据紧凑）
+    // 空间足够，只是因为之前数据的写入/读出导致碎片化，进行数据紧凑
     size_t readable = ReadableBytes();
     std::copy(BeginPtr_() + read_pos_, BeginPtr_() + write_pos_, BeginPtr_());
     read_pos_ = 0;

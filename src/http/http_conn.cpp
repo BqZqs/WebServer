@@ -19,6 +19,7 @@ HttpConn::~HttpConn() {
   Close(); 
 }
 
+// 保持长连接或是新建时进行Http连接初始化
 void HttpConn::Init(int sock_fd, const sockaddr_in& addr) {
   assert(sock_fd > 0);
   user_count++;
@@ -53,12 +54,13 @@ ssize_t HttpConn::Read(int* save_errno) {
     if (len <= 0) {
       break;
     }
-  } while (is_et); // 如果是 ET (边缘触发) 模式，必须一次性把 Socket 里的数据读空
+  } while (is_et); // 如果是 ET 模式，必须一次性把 Socket 里的数据读空
   return len;
 }
 
-// ================== 核心业务逻辑驱动 ==================
+// 业务逻辑驱动
 bool HttpConn::Process() {
+  //初始化 Http 请求类
   request_.Init();
   
   if (read_buff_.ReadableBytes() <= 0) {
@@ -71,7 +73,7 @@ bool HttpConn::Process() {
     LOG_DEBUG("%s", request_.path().c_str());
     response_.Init(src_dir, request_.path(), request_.IsKeepAlive(), 200);
   } else {
-    // 解析失败（报文损坏或格式不对），生成 400 Bad Request
+    // 解析失败，生成 400 Bad Request
     response_.Init(src_dir, request_.path(), false, 400);
   }
 
@@ -94,7 +96,7 @@ bool HttpConn::Process() {
   return true;
 }
 
-// ================== 聚集写与动态位移核心逻辑 ==================
+// 聚集写与动态位移核心逻辑
 ssize_t HttpConn::Write(int* save_errno) {
   ssize_t len = -1;
   do {
@@ -112,7 +114,7 @@ ssize_t HttpConn::Write(int* save_errno) {
     }
 
     // ===================================================
-    // 判断写入的数据量，进行指针位移操作 (应对非阻塞 I/O 的部分发送)
+    // 判断写入的数据量，进行指针位移操作
     // ===================================================
     if (static_cast<size_t>(len) > iov_[0].iov_len) {
       // 走到这里说明 Header 已经全部发完，并且 File 数据也发了一部分

@@ -62,7 +62,7 @@ namespace web_server {
 		void WebServer::InitEventMode_(int trig_mode) {
 			listen_event_ = EPOLLRDHUP;
 			conn_event_ = EPOLLONESHOT | EPOLLRDHUP;
-			// 灵活配置边缘触发(ET)和水平触发(LT)
+			// 灵活配置 ET 和 LT
 			switch (trig_mode) {
 				case 0: break;
 				case 1: conn_event_ |= EPOLLET; break;
@@ -132,7 +132,7 @@ namespace web_server {
 				int fd = accept(listen_fd_, (struct sockaddr*)&addr, &len);
 				if (fd <= 0) { return; }
 				else if (http::HttpConn::user_count >= kMaxFd) {
-					// 达到服务器上限，优雅拒绝
+					// 达到服务器上限，拒绝连接
 					SendError_(fd, "Server busy!");
 					LOG_WARN("Clients is full!");
 					return;
@@ -144,15 +144,15 @@ namespace web_server {
 		// 封装读事件并抛给线程池
 		void WebServer::DealRead_(http::HttpConn* client) {
 			assert(client);
-			timer_->Adjust(client->GetFd(), timeout_ms_); // 续命心跳
-														  // [C++11 特性] 利用 std::bind 将类的成员函数与具体对象绑定，抛进任务队列
+			timer_->Adjust(client->GetFd(), timeout_ms_); // 分配新的过期时间
+														  // 利用 std::bind 将类的成员函数与具体对象绑定，抛进任务队列
 			thread_pool_->AddTask(std::bind(&WebServer::OnRead_, this, client));
 		}
 
 		// 封装写事件并抛给线程池
 		void WebServer::DealWrite_(http::HttpConn* client) {
 			assert(client);
-			timer_->Adjust(client->GetFd(), timeout_ms_); // 续命心跳
+			timer_->Adjust(client->GetFd(), timeout_ms_); // 分配新的过期时间
 			thread_pool_->AddTask(std::bind(&WebServer::OnWrite_, this, client));
 		}
 
@@ -215,12 +215,11 @@ namespace web_server {
 			addr.sin_addr.s_addr = htonl(INADDR_ANY);
 			addr.sin_port = htons(port_);
 
-			// 【修改后】：使用 memset 消除警告
 			struct linger opt_linger;
 			memset(&opt_linger, 0, sizeof(opt_linger));
 
 			if (open_linger_) {
-				// 优雅关闭：直到缓冲区剩余数据发送完毕或超时才真正断开
+				//直到缓冲区剩余数据发送完毕或超时才真正断开
 				opt_linger.l_onoff = 1;
 				opt_linger.l_linger = 1;
 			}

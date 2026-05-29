@@ -16,7 +16,7 @@
 namespace web_server {
 namespace net {
 
-// Reactor 核心总管家
+// Reactor
 class WebServer {
  public:
   // 构造函数：解析来自 config 的参数，组装所有组件
@@ -34,7 +34,7 @@ class WebServer {
   // 初始化系统网络监听 Socket
   bool InitSocket_();
   
-  // 初始化连接模式 (边缘触发 ET 还是 水平触发 LT)
+  // 初始化连接模式 (ET 还是 LT)
   void InitEventMode_(int trig_mode);
   
   // 将新建连接存入连接池并注册 Epoll 和 Timer
@@ -56,13 +56,13 @@ class WebServer {
   // 设置 Socket 为非阻塞模式
   static int SetFdNonblock_(int fd);
 
-  // 【新增】声明发送错误信息的方法
+  // 声明发送错误信息的方法
   void SendError_(int fd, const char* info);
 
   static const int kMaxFd = 65536; // 支持的最大文件描述符数量
 
   int port_;          // 监听端口
-  bool open_linger_;  // 是否优雅关闭连接
+  bool open_linger_;  // TCP SO_LINGER 延迟关闭选项
   int timeout_ms_;    // 定时器超时时间 (毫秒)
   bool is_close_;     // 服务器是否已关闭
   int listen_fd_;     // 主监听 Socket

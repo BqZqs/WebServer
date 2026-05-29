@@ -1,7 +1,7 @@
 #include "base/sql_conn_pool.h"
 
 #include <cassert>
-#include "base/log.h" // 接入刚刚完成的日志系统！
+#include "base/log.h"
 
 namespace web_server {
 namespace base {
@@ -50,7 +50,7 @@ MYSQL* SqlConnPool::GetConn() {
   return sql;
 }
 
-// 释放连接（将其放回池中）
+// 归还连接
 void SqlConnPool::FreeConn(MYSQL* conn) {
   assert(conn);
   std::lock_guard<std::mutex> lock(mtx_);

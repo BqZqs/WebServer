@@ -21,7 +21,7 @@ class Config {
   // 加载解析配置文件，成功返回 true，失败（如文件不存在）返回 false
   bool LoadFile(const std::string& file_path);
 
-  // 类型安全的数据获取接口，并支持设定默认值 (Fail-Safe 机制)
+  // 类型安全的数据获取接口，并支持设定默认值 
   int GetInt(const std::string& key, int default_value = 0) const;
   std::string GetString(const std::string& key, const std::string& default_value = "") const;
 
